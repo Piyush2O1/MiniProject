@@ -2,10 +2,7 @@ import fs from "fs";
 
 function createList(req, res) {
     try {
-        const {
-            title,
-            boardId
-        } = req.body;
+        const {title, boardId } = req.body;
 
         if (!title || !boardId) {
             return res.status(400).send("Title and boardId are required");

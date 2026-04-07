@@ -2,10 +2,7 @@ import fs from "fs";
 
 function createBoard(req, res) {
     try {
-        const {
-            title,
-            userId
-        } = req.body;
+        const { title, userId } = req.body;
 
         if (!title || !userId) {
             return res.status(400).send("Title and userId are required");
