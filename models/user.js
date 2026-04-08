@@ -1,4 +1,3 @@
-// User.js
 import fs from "fs";
 
 function createUser(req, res) {
