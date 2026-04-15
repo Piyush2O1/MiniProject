@@ -1,10 +1,9 @@
-//list.js
 const express = require('express');
 const {
-  createList,
-  editList,
-  deleteList
-} = require('../controller/list.controller');
+  createList,
+  editList,
+  deleteList
+} = require('../Controller/list.controller');
 const { requireAuth } = require('../middleware/auth');
 
 const router = express.Router();

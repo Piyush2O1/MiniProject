@@ -1,11 +1,10 @@
-//board.js
 const express = require('express');
 const {
-  showDashboard,
-  createBoard,
-  showBoard,
-  deleteBoard
-} = require('../controller/board.controller');
+  showDashboard,
+  createBoard,
+  showBoard,
+  deleteBoard
+} = require('../Controller/board.controller');
 const { requireAuth } = require('../middleware/auth');
 
 const router = express.Router();

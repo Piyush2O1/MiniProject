@@ -1,14 +1,13 @@
-//card.js
 const express = require('express');
 const {
-  createCard,
-  editCard,
-  deleteCard,
-  moveCard,
-  addSubtask,
-  toggleSubtask,
-  deleteSubtask
-} = require('../controller/card.controller');
+  createCard,
+  editCard,
+  deleteCard,
+  moveCard,
+  addSubtask,
+  toggleSubtask,
+  deleteSubtask
+} = require('../Controller/card.controller');
 const { requireAuth } = require('../middleware/auth');
 
 const router = express.Router();

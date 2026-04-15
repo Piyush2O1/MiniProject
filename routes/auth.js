@@ -5,7 +5,7 @@ const {
   showSignup,
   signupUser,
   logoutUser
-} = require('../controller/auth.controller');
+} = require('../Controller/auth.controller');
 
 const router = express.Router();
 
