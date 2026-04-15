@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -67,3 +68,48 @@
     </main>
   </body>
 </html>
+=======
+<%- include('partials/header', { pageTitle }) %>
+
+<section class="page-head">
+  <div>
+    <h1>Your Boards</h1>
+    <p class="page-note">Create a board and start tracking personal tasks or group project cards.</p>
+  </div>
+</section>
+
+<% if (error) { %>
+  <div class="message error"><%= error %></div>
+<% } %>
+
+<section class="panel">
+  <h2>Create New Board</h2>
+  <form action="/boards" method="POST" class="inline-form">
+    <input type="text" name="title" placeholder="Board title" required />
+    <button type="submit">Create Board</button>
+  </form>
+</section>
+
+<section class="board-grid">
+  <% if (!boards.length) { %>
+    <article class="panel">
+      <h3>No boards yet</h3>
+      <p class="page-note">Create your first board to begin.</p>
+    </article>
+  <% } %>
+
+  <% boards.forEach((board) => { %>
+    <article class="panel">
+      <h3><%= board.title %></h3>
+      <div class="panel-actions">
+        <a href="/boards/<%= board._id %>" class="button-link">Open Board</a>
+        <form action="/boards/<%= board._id %>/delete" method="POST">
+          <button type="submit" class="ghost-button danger-button">Delete</button>
+        </form>
+      </div>
+    </article>
+  <% }) %>
+</section>
+
+<%- include('partials/footer') %>
+>>>>>>> 51bc1e1d31230683fb665d3668dcecd8796ca3ad

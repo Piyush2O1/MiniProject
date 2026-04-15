@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -41,3 +42,36 @@
     </main>
   </body>
 </html>
+=======
+<%- include('partials/header', { pageTitle }) %>
+
+<section class="auth-card">
+  <h1>Login</h1>
+  <p class="page-note">Sign in to view your boards and manage tasks.</p>
+
+  <% if (error) { %>
+    <div class="message error"><%= error %></div>
+  <% } %>
+
+  <form action="/auth/login" method="POST" class="stack-form">
+    <label>
+      Email
+      <input type="email" name="email" required />
+    </label>
+
+    <label>
+      Password
+      <input type="password" name="password" required />
+    </label>
+
+    <button type="submit">Login</button>
+  </form>
+
+  <p class="page-note">
+    New here?
+    <a href="/auth/signup">Create an account</a>
+  </p>
+</section>
+
+<%- include('partials/footer') %>
+>>>>>>> 51bc1e1d31230683fb665d3668dcecd8796ca3ad
