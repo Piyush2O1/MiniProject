@@ -23,7 +23,9 @@ async function loginUser(req, res, next) {
         error: 'Email and password are required.'
       });
     }
-
+    if(password.length>20){
+      return res.status(400).send("invalid password");
+    }
     const user = await User.findOne({ email: email.trim().toLowerCase() });
 
     if (!user) {
