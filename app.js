@@ -1,5 +1,6 @@
-const express = require('express');
-const mongoose = require('mongoose');
+const path = require('path'); 
+const express = require('express');  
+const mongoose = require('mongoose');   
 const session = require('express-session');
 const dotenv = require('dotenv');
 
@@ -11,11 +12,14 @@ const cardRoutes = require('./routes/card');
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 8081;
+const PORT = process.env.PORT || 3000;
+
+app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'views'));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
+app.use(express.static(path.join(__dirname, 'public')));
 app.use(
   session({
     secret: process.env.SESSION_SECRET || 'simple-secret',
@@ -25,12 +29,16 @@ app.use(
 );
 
 app.use((req, res, next) => {
-  req.userId = req.session.userId || null;
+  res.locals.currentUserId = req.session.userId || null;
   next();
 });
 
 app.get('/', (req, res) => {
-  res.send('Backend server is running');
+  if (req.session.userId) {
+    return res.redirect('/boards');
+  }
+
+  return res.redirect('/auth/login');
 });
 
 app.use('/auth', authRoutes);
@@ -39,9 +47,7 @@ app.use('/lists', listRoutes);
 app.use('/cards', cardRoutes);
 
 app.use((req, res) => {
-  res.status(404).json({
-    message: 'Route not found'
-  });
+  res.status(404).send('Page not found');
 });
 
 app.use((error, req, res, next) => {
@@ -51,9 +57,7 @@ app.use((error, req, res, next) => {
     return next(error);
   }
 
-  res.status(500).json({
-    message: 'Internal server error'
-  });
+  return res.status(500).send('Internal server Error');
 });
 
 async function startServer() {
@@ -75,4 +79,4 @@ async function startServer() {
   }
 }
 
-startServer();
+startServer(); 
