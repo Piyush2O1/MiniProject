@@ -9,9 +9,9 @@
   <body>
     <header class="site-header">
       <div class="container nav-row">
-        <a href="<%= currentUserId ? '/boards' : '/auth/login' %>" class="brand">Plain Kanban</a>
+        <a href="<%= typeof currentUserId !== 'undefined' && currentUserId ? '/boards' : '/auth/login' %>" class="brand">Plain Kanban</a>
         <nav class="nav-links">
-          <% if (currentUserId) { %>
+          <% if (typeof currentUserId !== 'undefined' && currentUserId) { %>
             <a href="/boards">Dashboard</a>
             <form action="/auth/logout" method="POST">
               <button type="submit" class="ghost-button">Logout</button>

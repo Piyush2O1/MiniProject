@@ -43,6 +43,11 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 
+app.use((req, res, next) => {
+  res.locals.currentUserId = null;
+  next();
+});
+
 app.use(async (req, res, next) => {
   try {
     await databaseReady;
