@@ -1,3 +1,7 @@
+const Board = require('../models/board');
+const List = require('../models/list');
+const Card = require('../models/card');
+const { renderBoardPage } = require('./render-helpers');
 
 async function createList(req, res, next) {
   try {
@@ -9,7 +13,7 @@ async function createList(req, res, next) {
     }
 
     if (!title) {
-      return renderBoardPage(req, res, board._id, 'List title is required.');
+      return await renderBoardPage(req, res, board._id, 'List title is required.');
     }
 
     await List.create({
@@ -39,7 +43,7 @@ async function editList(req, res, next) {
     }
 
     if (!title) {
-      return renderBoardPage(req, res, board._id, 'List title is required.');
+      return await renderBoardPage(req, res, board._id, 'List title is required.');
     }
 
     list.title = title;

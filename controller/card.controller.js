@@ -1,37 +1,7 @@
-//card.controller.js
-
-const Board = require('../models/Board');
-const List = require('../models/List');
-const Card = require('../models/Card');
-
-async function renderBoardPage(req, res, boardId, error = null) {
-  const board = await Board.findOne({ _id: boardId, userId: req.session.userId }).lean();
-
-  if (!board) {
-    return res.status(404).render('board-view', {
-      pageTitle: 'Board Not Found',
-      board: null,
-      lists: [],
-      error: 'Board not found or access denied.'
-    });
-  }
-
-  const lists = await List.find({ boardId: board._id }).sort({ createdAt: 1 }).lean();
-  const listIds = lists.map((list) => list._id);
-  const cards = await Card.find({ listId: { $in: listIds } }).sort({ createdAt: 1 }).lean();
-
-  const listsWithCards = lists.map((list) => ({
-    ...list,
-    cards: cards.filter((card) => String(card.listId) === String(list._id))
-  }));
-
-  return res.render('board-view', {
-    pageTitle: board.title,
-    board,
-    lists: listsWithCards,
-    error
-  });
-}
+const Board = require('../models/board');
+const List = require('../models/list');
+const Card = require('../models/card');
+const { renderBoardPage } = require('./render-helpers');
 
 function parseMembers(membersText) {
   return (membersText || '')
@@ -93,16 +63,16 @@ async function createCard(req, res, next) {
     const subtasks = parseSubtasks(req.body.subtasksText);
 
     if (!title) {
-      return renderBoardPage(req, res, board._id, 'Task title is required.');
+      return await renderBoardPage(req, res, board._id, 'Task title is required.');
     }
 
     if (type === 'group') {
       if (!groupName) {
-        return renderBoardPage(req, res, board._id, 'Group name is required for a group project.');
+        return await renderBoardPage(req, res, board._id, 'Group name is required for a group project.');
       }
 
       if (!subtasks.length) {
-        return renderBoardPage(req, res, board._id, 'Add at least one subtask for a group project.');
+        return await renderBoardPage(req, res, board._id, 'Add at least one subtask for a group project.');
       }
     }
 
@@ -139,11 +109,11 @@ async function editCard(req, res, next) {
     const members = parseMembers(req.body.members);
 
     if (!title) {
-      return renderBoardPage(req, res, board._id, 'Task title is required.');
+      return await renderBoardPage(req, res, board._id, 'Task title is required.');
     }
 
     if (type === 'group' && !groupName) {
-      return renderBoardPage(req, res, board._id, 'Group name is required for a group project.');
+      return await renderBoardPage(req, res, board._id, 'Group name is required for a group project.');
     }
 
     card.title = title;
@@ -156,7 +126,7 @@ async function editCard(req, res, next) {
     if (type === 'personal') {
       card.subtasks = [];
     } else if (!card.subtasks.length) {
-      return renderBoardPage(req, res, board._id, 'Group projects must keep at least one subtask.');
+      return await renderBoardPage(req, res, board._id, 'Group projects must keep at least one subtask.');
     }
 
     await card.save();
@@ -193,7 +163,7 @@ async function moveCard(req, res, next) {
     const destinationList = await List.findById(req.body.listId);
 
     if (!destinationList || String(destinationList.boardId) !== String(board._id)) {
-      return renderBoardPage(req, res, board._id, 'Please choose a list from this board.');
+      return await renderBoardPage(req, res, board._id, 'Please choose a list from this board.');
     }
 
     card.listId = destinationList._id;
@@ -216,7 +186,7 @@ async function addSubtask(req, res, next) {
     const title = req.body.title ? req.body.title.trim() : '';
 
     if (!title) {
-      return renderBoardPage(req, res, board._id, 'Subtask title is required.');
+      return await renderBoardPage(req, res, board._id, 'Subtask title is required.');
     }
 
     card.subtasks.push({ title });
@@ -260,7 +230,7 @@ async function deleteSubtask(req, res, next) {
     }
 
     if (card.subtasks.length === 1) {
-      return renderBoardPage(req, res, board._id, 'A group project must keep at least one subtask.');
+      return await renderBoardPage(req, res, board._id, 'A group project must keep at least one subtask.');
     }
 
     card.subtasks.pull({ _id: req.params.subtaskId });
@@ -281,4 +251,3 @@ module.exports = {
   toggleSubtask,
   deleteSubtask
 };
-

@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title><%= pageTitle %></title>
+    <style>
+      body { font-family: Arial, sans-serif; background: #f4f7fb; color: #152033; margin: 0; }
+      .shell { max-width: 1000px; margin: 40px auto; padding: 0 20px 40px; }
+      .topbar, .card, .board-card { background: #fff; border-radius: 16px; box-shadow: 0 10px 30px rgba(21,32,51,.08); }
+      .topbar { display: flex; justify-content: space-between; align-items: center; padding: 20px 24px; margin-bottom: 24px; }
+      .card { padding: 24px; margin-bottom: 24px; }
+      .board-grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+      .board-card { padding: 20px; display: grid; gap: 12px; }
+      form { display: grid; gap: 12px; }
+      input { padding: 10px 12px; border: 1px solid #cdd6e1; border-radius: 10px; font-size: 14px; }
+      button, a.button { border: 0; border-radius: 10px; padding: 10px 14px; font-size: 14px; cursor: pointer; background: #1f6feb; color: #fff; text-decoration: none; display: inline-block; }
+      .danger { background: #b42318; }
+      .muted { background: #e8eef8; color: #152033; }
+      .actions { display: flex; gap: 10px; flex-wrap: wrap; }
+      .error { background: #fee2e2; color: #991b1b; padding: 12px; border-radius: 10px; margin-bottom: 16px; }
+      .empty { color: #5b6472; }
+    </style>
+  </head>
+  <body>
+    <main class="shell">
+      <section class="topbar">
+        <div>
+          <h1 style="margin:0;">Dashboard</h1>
+          <p style="margin:6px 0 0;">Create and manage your boards.</p>
+        </div>
+        <form action="/auth/logout" method="post">
+          <button class="muted" type="submit">Logout</button>
+        </form>
+      </section>
+
+      <section class="card">
+        <h2>Create board</h2>
+        <% if (error) { %>
+          <div class="error"><%= error %></div>
+        <% } %>
+        <form action="/boards" method="post">
+          <input type="text" name="title" placeholder="Board title" required />
+          <button type="submit">Create board</button>
+        </form>
+      </section>
+
+      <section class="board-grid">
+        <% if (!boards.length) { %>
+          <div class="card empty">No boards yet. Create your first one above.</div>
+        <% } %>
+        <% boards.forEach((board) => { %>
+          <article class="board-card">
+            <div>
+              <h3 style="margin:0 0 8px;"><%= board.title %></h3>
+              <small>Created <%= new Date(board.createdAt).toLocaleDateString() %></small>
+            </div>
+            <div class="actions">
+              <a class="button" href="/boards/<%= board._id %>">Open</a>
+              <form action="/boards/<%= board._id %>/delete" method="post">
+                <button class="danger" type="submit">Delete</button>
+              </form>
+            </div>
+          </article>
+        <% }) %>
+      </section>
+    </main>
+  </body>
+</html>
