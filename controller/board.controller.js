@@ -1,6 +1,7 @@
-const Board = require('../models/Board');
-const List = require('../models/List');
-const Card = require('../models/Card');
+//board.controller.js
+const Board = require('../models/board');
+const List = require('../models/list');
+const Card = require('../models/card');
 
 async function renderDashboard(res, userId, error = null) {
   const boards = await Board.find({ userId }).sort({ createdAt: -1 }).lean();

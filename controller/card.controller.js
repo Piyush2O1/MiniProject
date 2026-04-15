@@ -1,8 +1,8 @@
 //card.controller.js
 
-const Board = require('../models/Board');
-const List = require('../models/List');
-const Card = require('../models/Card');
+const Board = require('../models/board');
+const List = require('../models/list');
+const Card = require('../models/card');
 
 async function renderBoardPage(req, res, boardId, error = null) {
   const board = await Board.findOne({ _id: boardId, userId: req.session.userId }).lean();
