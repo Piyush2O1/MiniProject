@@ -1,11 +1,13 @@
 const mongoose = require('mongoose');
+const { VALIDATION_LIMITS } = require('../lib/validation');
 
 const subtaskSchema = new mongoose.Schema(
   {
     title: {
       type: String,
       required: true,
-      trim: true
+      trim: true,
+      maxlength: VALIDATION_LIMITS.subtaskTitle.max
     },
     isDone: {
       type: Boolean,
@@ -22,12 +24,14 @@ const cardSchema = new mongoose.Schema(
     title: {
       type: String,
       required: true,
-      trim: true
+      trim: true,
+      maxlength: VALIDATION_LIMITS.cardTitle.max
     },
     description: {
       type: String,
       trim: true,
-      default: ''
+      default: '',
+      maxlength: VALIDATION_LIMITS.cardDescription.max
     },
     dueDate: {
       type: Date,
@@ -46,12 +50,14 @@ const cardSchema = new mongoose.Schema(
     groupName: {
       type: String,
       trim: true,
-      default: ''
+      default: '',
+      maxlength: VALIDATION_LIMITS.groupName.max
     },
     members: [
       {
         type: String,
-        trim: true
+        trim: true,
+        maxlength: VALIDATION_LIMITS.memberName.max
       }
     ],
     subtasks: [subtaskSchema]
@@ -59,6 +65,16 @@ const cardSchema = new mongoose.Schema(
   {
     timestamps: true
   }
+);
+
+cardSchema.path('members').validate(
+  (members) => members.length <= VALIDATION_LIMITS.memberCount.max,
+  `You can add up to ${VALIDATION_LIMITS.memberCount.max} members only.`
+);
+
+cardSchema.path('subtasks').validate(
+  (subtasks) => subtasks.length <= VALIDATION_LIMITS.subtaskCount.max,
+  `You can add up to ${VALIDATION_LIMITS.subtaskCount.max} subtasks only.`
 );
 
 module.exports = mongoose.model('Card', cardSchema);

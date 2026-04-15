@@ -14,7 +14,13 @@
 <section class="panel">
   <h2>Create New Board</h2>
   <form action="/boards" method="POST" class="inline-form">
-    <input type="text" name="title" placeholder="Board title" required />
+    <input
+      type="text"
+      name="title"
+      placeholder="Board title"
+      maxlength="<%= validationLimits.boardTitle.max %>"
+      required
+    />
     <button type="submit">Create Board</button>
   </form>
 </section>

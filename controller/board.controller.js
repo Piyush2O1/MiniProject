@@ -2,6 +2,7 @@ const Board = require('../models/board');
 const List = require('../models/list');
 const Card = require('../models/card');
 const { renderDashboard, renderBoardPage } = require('./render-helpers');
+const { normalizeText, validateText, VALIDATION_LIMITS } = require('../lib/validation');
 
 async function showDashboard(req, res, next) {
   try {
@@ -13,10 +14,16 @@ async function showDashboard(req, res, next) {
 
 async function createBoard(req, res, next) {
   try {
-    const title = req.body.title ? req.body.title.trim() : '';
+    const title = normalizeText(req.body.title);
 
     if (!title) {
       return await renderDashboard(res, req.session.userId, 'Board title is required.');
+    }
+
+    const titleError = validateText(title, VALIDATION_LIMITS.boardTitle);
+
+    if (titleError) {
+      return await renderDashboard(res, req.session.userId, titleError);
     }
 
     const board = await Board.create({

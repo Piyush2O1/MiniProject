@@ -2,21 +2,17 @@ const Board = require('../models/board');
 const List = require('../models/list');
 const Card = require('../models/card');
 const { renderBoardPage } = require('./render-helpers');
-
-function parseMembers(membersText) {
-  return (membersText || '')
-    .split(',')
-    .map((member) => member.trim())
-    .filter(Boolean);
-}
-
-function parseSubtasks(subtasksText) {
-  return (subtasksText || '')
-    .split(/\r?\n/)
-    .map((subtask) => subtask.trim())
-    .filter(Boolean)
-    .map((title) => ({ title }));
-}
+const {
+  normalizeOptionalText,
+  normalizeText,
+  validateText,
+  VALIDATION_LIMITS,
+  parseMembers,
+  validateMembers,
+  parseSubtasks,
+  validateSubtasks,
+  isValidDateInput
+} = require('../lib/validation');
 
 async function findBoardByList(userId, listId) {
   const list = await List.findById(listId);
@@ -54,11 +50,11 @@ async function createCard(req, res, next) {
       return res.redirect('/boards');
     }
 
-    const title = req.body.title ? req.body.title.trim() : '';
+    const title = normalizeText(req.body.title);
     const type = req.body.type === 'group' ? 'group' : 'personal';
-    const description = req.body.description ? req.body.description.trim() : '';
+    const description = normalizeOptionalText(req.body.description);
     const dueDate = req.body.dueDate || '';
-    const groupName = req.body.groupName ? req.body.groupName.trim() : '';
+    const groupName = normalizeText(req.body.groupName);
     const members = parseMembers(req.body.members);
     const subtasks = parseSubtasks(req.body.subtasksText);
 
@@ -66,13 +62,43 @@ async function createCard(req, res, next) {
       return await renderBoardPage(req, res, board._id, 'Task title is required.');
     }
 
+    const titleError = validateText(title, VALIDATION_LIMITS.cardTitle);
+
+    if (titleError) {
+      return await renderBoardPage(req, res, board._id, titleError);
+    }
+
+    const descriptionError = validateText(description, VALIDATION_LIMITS.cardDescription, { required: false });
+
+    if (descriptionError) {
+      return await renderBoardPage(req, res, board._id, descriptionError);
+    }
+
+    if (!isValidDateInput(dueDate)) {
+      return await renderBoardPage(req, res, board._id, 'Please enter a valid due date.');
+    }
+
     if (type === 'group') {
-      if (!groupName) {
-        return await renderBoardPage(req, res, board._id, 'Group name is required for a group project.');
+      const groupNameError = validateText(groupName, VALIDATION_LIMITS.groupName);
+
+      if (groupNameError) {
+        return await renderBoardPage(req, res, board._id, groupNameError);
       }
 
       if (!subtasks.length) {
         return await renderBoardPage(req, res, board._id, 'Add at least one subtask for a group project.');
+      }
+
+      const membersError = validateMembers(members);
+
+      if (membersError) {
+        return await renderBoardPage(req, res, board._id, membersError);
+      }
+
+      const subtasksError = validateSubtasks(subtasks);
+
+      if (subtasksError) {
+        return await renderBoardPage(req, res, board._id, subtasksError);
       }
     }
 
@@ -101,19 +127,45 @@ async function editCard(req, res, next) {
       return res.redirect('/boards');
     }
 
-    const title = req.body.title ? req.body.title.trim() : '';
-    const description = req.body.description ? req.body.description.trim() : '';
+    const title = normalizeText(req.body.title);
+    const description = normalizeOptionalText(req.body.description);
     const dueDate = req.body.dueDate || '';
     const type = req.body.type === 'group' ? 'group' : 'personal';
-    const groupName = req.body.groupName ? req.body.groupName.trim() : '';
+    const groupName = normalizeText(req.body.groupName);
     const members = parseMembers(req.body.members);
 
     if (!title) {
       return await renderBoardPage(req, res, board._id, 'Task title is required.');
     }
 
-    if (type === 'group' && !groupName) {
-      return await renderBoardPage(req, res, board._id, 'Group name is required for a group project.');
+    const titleError = validateText(title, VALIDATION_LIMITS.cardTitle);
+
+    if (titleError) {
+      return await renderBoardPage(req, res, board._id, titleError);
+    }
+
+    const descriptionError = validateText(description, VALIDATION_LIMITS.cardDescription, { required: false });
+
+    if (descriptionError) {
+      return await renderBoardPage(req, res, board._id, descriptionError);
+    }
+
+    if (!isValidDateInput(dueDate)) {
+      return await renderBoardPage(req, res, board._id, 'Please enter a valid due date.');
+    }
+
+    if (type === 'group') {
+      const groupNameError = validateText(groupName, VALIDATION_LIMITS.groupName);
+
+      if (groupNameError) {
+        return await renderBoardPage(req, res, board._id, groupNameError);
+      }
+
+      const membersError = validateMembers(members);
+
+      if (membersError) {
+        return await renderBoardPage(req, res, board._id, membersError);
+      }
     }
 
     card.title = title;
@@ -183,10 +235,25 @@ async function addSubtask(req, res, next) {
       return res.redirect('/boards');
     }
 
-    const title = req.body.title ? req.body.title.trim() : '';
+    const title = normalizeText(req.body.title);
 
     if (!title) {
       return await renderBoardPage(req, res, board._id, 'Subtask title is required.');
+    }
+
+    const titleError = validateText(title, VALIDATION_LIMITS.subtaskTitle);
+
+    if (titleError) {
+      return await renderBoardPage(req, res, board._id, titleError);
+    }
+
+    if (card.subtasks.length >= VALIDATION_LIMITS.subtaskCount.max) {
+      return await renderBoardPage(
+        req,
+        res,
+        board._id,
+        `You can add up to ${VALIDATION_LIMITS.subtaskCount.max} subtasks only.`
+      );
     }
 
     card.subtasks.push({ title });

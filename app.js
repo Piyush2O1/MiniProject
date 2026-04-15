@@ -5,6 +5,7 @@ const MongoStore = require('connect-mongo');
 const dotenv = require('dotenv');
 
 const { connectToDatabase } = require('./lib/database');
+const { VALIDATION_LIMITS } = require('./lib/validation');
 const authRoutes = require('./routes/auth');
 const boardRoutes = require('./routes/board');
 const listRoutes = require('./routes/list');
@@ -38,6 +39,7 @@ app.locals.formatDateInput = (value) => {
   const date = new Date(value);
   return Number.isNaN(date.getTime()) ? '' : date.toISOString().split('T')[0];
 };
+app.locals.validationLimits = VALIDATION_LIMITS;
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));

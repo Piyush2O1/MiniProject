@@ -1,6 +1,13 @@
 const bcrypt = require('bcryptjs');
 
 const User = require('../models/user');
+const {
+  normalizeText,
+  validateEmail,
+  validatePassword,
+  validateText,
+  VALIDATION_LIMITS
+} = require('../lib/validation');
 
 function showLogin(req, res) {
   if (req.session.userId) {
@@ -15,7 +22,8 @@ function showLogin(req, res) {
 
 async function loginUser(req, res, next) {
   try {
-    const { email, password } = req.body;
+    const email = normalizeText(req.body.email).toLowerCase();
+    const password = typeof req.body.password === 'string' ? req.body.password : '';
 
     if (!email || !password) {
       return res.status(400).render('login', {
@@ -23,10 +31,26 @@ async function loginUser(req, res, next) {
         error: 'Email and password are required.'
       });
     }
-    if(password.length>20){
-      return res.status(400).send("invalid password");
+
+    const emailError = validateEmail(email);
+
+    if (emailError) {
+      return res.status(400).render('login', {
+        pageTitle: 'Login',
+        error: emailError
+      });
     }
-    const user = await User.findOne({ email: email.trim().toLowerCase() });
+
+    const passwordError = validatePassword(password, { enforceMinLength: false });
+
+    if (passwordError) {
+      return res.status(400).render('login', {
+        pageTitle: 'Login',
+        error: passwordError
+      });
+    }
+
+    const user = await User.findOne({ email });
 
     if (!user) {
       return res.status(400).render('login', {
@@ -64,7 +88,9 @@ function showSignup(req, res) {
 
 async function signupUser(req, res, next) {
   try {
-    const { username, email, password } = req.body;
+    const username = normalizeText(req.body.username);
+    const email = normalizeText(req.body.email).toLowerCase();
+    const password = typeof req.body.password === 'string' ? req.body.password : '';
 
     if (!username || !email || !password) {
       return res.status(400).render('signup', {
@@ -73,8 +99,34 @@ async function signupUser(req, res, next) {
       });
     }
 
-    const normalizedEmail = email.trim().toLowerCase();
-    const existingUser = await User.findOne({ email: normalizedEmail });
+    const usernameError = validateText(username, VALIDATION_LIMITS.username);
+
+    if (usernameError) {
+      return res.status(400).render('signup', {
+        pageTitle: 'Sign Up',
+        error: usernameError
+      });
+    }
+
+    const emailError = validateEmail(email);
+
+    if (emailError) {
+      return res.status(400).render('signup', {
+        pageTitle: 'Sign Up',
+        error: emailError
+      });
+    }
+
+    const passwordError = validatePassword(password);
+
+    if (passwordError) {
+      return res.status(400).render('signup', {
+        pageTitle: 'Sign Up',
+        error: passwordError
+      });
+    }
+
+    const existingUser = await User.findOne({ email });
 
     if (existingUser) {
       return res.status(400).render('signup', {
@@ -85,8 +137,8 @@ async function signupUser(req, res, next) {
 
     const hashedPassword = await bcrypt.hash(password, 10);
     const user = await User.create({
-      username: username.trim(),
-      email: normalizedEmail,
+      username,
+      email,
       password: hashedPassword
     });
 

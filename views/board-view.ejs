@@ -22,7 +22,13 @@
   <section class="panel">
     <h2>Add New List</h2>
     <form action="/lists/<%= board._id %>" method="POST" class="inline-form">
-      <input type="text" name="title" placeholder="List title" required />
+      <input
+        type="text"
+        name="title"
+        placeholder="List title"
+        maxlength="<%= validationLimits.listTitle.max %>"
+        required
+      />
       <button type="submit">Add List</button>
     </form>
   </section>
@@ -36,7 +42,13 @@
             <details>
               <summary>Edit</summary>
               <form action="/lists/<%= list._id %>/edit" method="POST" class="stack-form compact-form">
-                <input type="text" name="title" value="<%= list.title %>" required />
+                <input
+                  type="text"
+                  name="title"
+                  value="<%= list.title %>"
+                  maxlength="<%= validationLimits.listTitle.max %>"
+                  required
+                />
                 <button type="submit">Save</button>
               </form>
             </details>
@@ -59,12 +71,17 @@
 
             <label>
               Title
-              <input type="text" name="title" required />
+              <input type="text" name="title" maxlength="<%= validationLimits.cardTitle.max %>" required />
             </label>
 
             <label>
               Description
-              <textarea name="description" rows="2" placeholder="Optional description"></textarea>
+              <textarea
+                name="description"
+                rows="2"
+                placeholder="Optional description"
+                maxlength="<%= validationLimits.cardDescription.max %>"
+              ></textarea>
             </label>
 
             <label>
@@ -75,12 +92,22 @@
             <div id="type-fields-<%= list._id %>" class="group-fields hidden">
               <label>
                 Group Name
-                <input type="text" name="groupName" placeholder="Example: Viva Team" />
+                <input
+                  type="text"
+                  name="groupName"
+                  placeholder="Example: Viva Team"
+                  maxlength="<%= validationLimits.groupName.max %>"
+                />
               </label>
 
               <label>
                 Members
-                <input type="text" name="members" placeholder="Asha, Ravi, Meera" />
+                <input
+                  type="text"
+                  name="members"
+                  placeholder="Asha, Ravi, Meera"
+                  maxlength="<%= validationLimits.membersInput.max %>"
+                />
               </label>
 
               <label>
@@ -89,6 +116,7 @@
                   name="subtasksText"
                   rows="4"
                   placeholder="Write one subtask per line"
+                  maxlength="<%= validationLimits.subtasksInput.max %>"
                 ></textarea>
               </label>
             </div>
@@ -144,7 +172,13 @@
                   </div>
 
                   <form action="/cards/subtasks/<%= card._id %>" method="POST" class="inline-form compact-form">
-                    <input type="text" name="title" placeholder="New subtask" required />
+                    <input
+                      type="text"
+                      name="title"
+                      placeholder="New subtask"
+                      maxlength="<%= validationLimits.subtaskTitle.max %>"
+                      required
+                    />
                     <button type="submit">Add</button>
                   </form>
                 </section>
@@ -171,12 +205,22 @@
 
                   <label>
                     Title
-                    <input type="text" name="title" value="<%= card.title %>" required />
+                    <input
+                      type="text"
+                      name="title"
+                      value="<%= card.title %>"
+                      maxlength="<%= validationLimits.cardTitle.max %>"
+                      required
+                    />
                   </label>
 
                   <label>
                     Description
-                    <textarea name="description" rows="2"><%= card.description || '' %></textarea>
+                    <textarea
+                      name="description"
+                      rows="2"
+                      maxlength="<%= validationLimits.cardDescription.max %>"
+                    ><%= card.description || '' %></textarea>
                   </label>
 
                   <label>
@@ -191,12 +235,23 @@
                   <% if (card.type === 'group') { %>
                     <label>
                       Group Name
-                      <input type="text" name="groupName" value="<%= card.groupName || '' %>" required />
+                      <input
+                        type="text"
+                        name="groupName"
+                        value="<%= card.groupName || '' %>"
+                        maxlength="<%= validationLimits.groupName.max %>"
+                        required
+                      />
                     </label>
 
                     <label>
                       Members
-                      <input type="text" name="members" value="<%= card.members.join(', ') %>" />
+                      <input
+                        type="text"
+                        name="members"
+                        value="<%= card.members.join(', ') %>"
+                        maxlength="<%= validationLimits.membersInput.max %>"
+                      />
                     </label>
                   <% } %>
 
