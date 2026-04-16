@@ -16,5 +16,90 @@
         </div>
       </div>
     </footer>
+    <div id="toast-root" class="toast-root" aria-live="polite" aria-atomic="true"></div>
+    <script>
+      (() => {
+        const toastRoot = document.getElementById('toast-root');
+
+        if (!toastRoot) {
+          return;
+        }
+
+        const activeToasts = new Map();
+
+        function showToast(message, key = message) {
+          if (!message) {
+            return;
+          }
+
+          if (activeToasts.has(key)) {
+            const existingToast = activeToasts.get(key);
+            existingToast.classList.remove('toast-hiding');
+            existingToast.classList.add('toast-visible');
+            clearTimeout(Number(existingToast.dataset.timeoutId || '0'));
+          } else {
+            const toast = document.createElement('div');
+            toast.className = 'toast toast-visible';
+            toast.innerHTML = `
+              <span class="toast-icon" aria-hidden="true">!</span>
+              <p class="toast-text"></p>
+            `;
+            toast.querySelector('.toast-text').textContent = message;
+            toastRoot.appendChild(toast);
+            activeToasts.set(key, toast);
+          }
+
+          const toast = activeToasts.get(key);
+          const timeoutId = window.setTimeout(() => {
+            toast.classList.remove('toast-visible');
+            toast.classList.add('toast-hiding');
+
+            window.setTimeout(() => {
+              toast.remove();
+              activeToasts.delete(key);
+            }, 220);
+          }, 3200);
+
+          toast.dataset.timeoutId = String(timeoutId);
+        }
+
+        function wireClientValidation(form) {
+          form.noValidate = true;
+
+          form.addEventListener(
+            'invalid',
+            (event) => {
+              event.preventDefault();
+              showToast(event.target.validationMessage, `field:${event.target.name}:${event.target.validationMessage}`);
+            },
+            true
+          );
+
+          form.addEventListener('submit', (event) => {
+            if (form.checkValidity()) {
+              return;
+            }
+
+            event.preventDefault();
+
+            const firstInvalidField = form.querySelector(':invalid');
+
+            if (firstInvalidField) {
+              showToast(
+                firstInvalidField.validationMessage,
+                `field:${firstInvalidField.name}:${firstInvalidField.validationMessage}`
+              );
+              firstInvalidField.focus();
+            }
+          });
+        }
+
+        document.querySelectorAll('form').forEach(wireClientValidation);
+
+        document.querySelectorAll('.message.error').forEach((messageNode, index) => {
+          showToast(messageNode.textContent.trim(), `server:${index}:${messageNode.textContent.trim()}`);
+        });
+      })();
+    </script>
   </body>
 </html>
