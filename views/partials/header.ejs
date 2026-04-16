@@ -9,7 +9,10 @@
   <body>
     <header class="site-header">
       <div class="container nav-row">
-        <a href="<%= typeof currentUserId !== 'undefined' && currentUserId ? '/boards' : '/auth/login' %>" class="brand">Plain Kanban</a>
+        <div class="brand-block">
+          <a href="<%= typeof currentUserId !== 'undefined' && currentUserId ? '/boards' : '/auth/login' %>" class="brand">Plain Kanban</a>
+          <p class="brand-note">Simple personal and group task tracking</p>
+        </div>
         <nav class="nav-links">
           <% if (typeof currentUserId !== 'undefined' && currentUserId) { %>
             <a href="/boards">Dashboard</a>
