@@ -61,13 +61,15 @@ app.use((error, req, res, next) => {
 });
 
 async function startServer() {
-  if (!process.env.DB_URL) {
+  const dbUrl = process.env.DB_URL || process.env.gitDB_URL;
+
+  if (!dbUrl) {
     console.error('DB_URL is missing. Create a .env file and add your MongoDB connection string.');
     process.exit(1);
   }
 
   try {
-    await mongoose.connect(process.env.DB_URL);
+    await mongoose.connect(dbUrl);
     console.log('MongoDB connected');
 
     app.listen(PORT, () => {
