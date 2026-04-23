@@ -1,0 +1,36 @@
+<%- include('partials/header', { pageTitle }) %>
+
+<section class="auth-card">
+  <h1>Create Account</h1>
+  <p class="page-note">Start with a simple personal board workspace.</p>
+
+  <% if (error) { %>
+    <div class="message error"><%= error %></div>
+  <% } %>
+
+  <form action="/auth/signup" method="POST" class="stack-form">
+    <label>
+      Username
+      <input type="text" name="username" required />
+    </label>
+
+    <label>
+      Email
+      <input type="email" name="email" required />
+    </label>
+
+    <label>
+      Password
+      <input type="password" name="password" required />
+    </label>
+
+    <button type="submit">Sign Up</button>
+  </form>
+
+  <p class="page-note">
+    Already have an account?
+    <a href="/auth/login">Login</a>
+  </p>
+</section>
+
+<%- include('partials/footer') %>

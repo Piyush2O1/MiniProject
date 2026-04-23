@@ -1,0 +1,237 @@
+<%- include('partials/header', { pageTitle }) %>
+
+<% if (!board) { %>
+  <section class="panel">
+    <h1>Board Not Found</h1>
+    <p class="page-note"><%= error %></p>
+    <a href="/boards" class="button-link">Back to Dashboard</a>
+  </section>
+<% } else { %>
+  <section class="page-head">
+    <div>
+      <a href="/boards" class="back-link">Back to Dashboard</a>
+      <h1><%= board.title %></h1>
+      <p class="page-note">Manage personal tasks and group project cards in simple server-rendered lists.</p>
+    </div>
+  </section>
+
+  <% if (error) { %>
+    <div class="message error"><%= error %></div>
+  <% } %>
+
+  <section class="panel">
+    <h2>Add New List</h2>
+    <form action="/lists/<%= board._id %>" method="POST" class="inline-form">
+      <input type="text" name="title" placeholder="List title" required />
+      <button type="submit">Add List</button>
+    </form>
+  </section>
+
+  <section class="list-row">
+    <% lists.forEach((list) => { %>
+      <article class="list-column">
+        <div class="list-header">
+          <h2><%= list.title %></h2>
+          <div class="list-actions">
+            <details>
+              <summary>Edit</summary>
+              <form action="/lists/<%= list._id %>/edit" method="POST" class="stack-form compact-form">
+                <input type="text" name="title" value="<%= list.title %>" required />
+                <button type="submit">Save</button>
+              </form>
+            </details>
+            <form action="/lists/<%= list._id %>/delete" method="POST">
+              <button type="submit" class="ghost-button danger-button">Delete</button>
+            </form>
+          </div>
+        </div>
+
+        <section class="panel form-panel">
+          <h3>Create Work Item</h3>
+          <form action="/cards/<%= list._id %>" method="POST" class="stack-form">
+            <label>
+              Work Type
+              <select name="type" class="task-type-select" data-target="type-fields-<%= list._id %>">
+                <option value="personal">Personal Task</option>
+                <option value="group">Group Project</option>
+              </select>
+            </label>
+
+            <label>
+              Title
+              <input type="text" name="title" required />
+            </label>
+
+            <label>
+              Description
+              <textarea name="description" rows="2" placeholder="Optional description"></textarea>
+            </label>
+
+            <label>
+              Due Date
+              <input type="date" name="dueDate" />
+            </label>
+
+            <div id="type-fields-<%= list._id %>" class="group-fields hidden">
+              <label>
+                Group Name
+                <input type="text" name="groupName" placeholder="Example: Viva Team" />
+              </label>
+
+              <label>
+                Members
+                <input type="text" name="members" placeholder="Asha, Ravi, Meera" />
+              </label>
+
+              <label>
+                Subtasks
+                <textarea
+                  name="subtasksText"
+                  rows="4"
+                  placeholder="Write one subtask per line"
+                ></textarea>
+              </label>
+            </div>
+
+            <button type="submit">Add Item</button>
+          </form>
+        </section>
+
+        <div class="card-stack">
+          <% if (!list.cards.length) { %>
+            <article class="card empty-card">
+              <p class="page-note">No items in this list yet.</p>
+            </article>
+          <% } %>
+
+          <% list.cards.forEach((card) => { %>
+            <article class="card <%= card.type === 'group' ? 'group-card' : '' %>">
+              <span class="badge <%= card.type === 'group' ? 'group-badge' : 'personal-badge' %>">
+                <%= card.type === 'group' ? 'Group Project' : 'Personal Task' %>
+              </span>
+              <h3><%= card.title %></h3>
+
+              <% if (card.description) { %>
+                <p><%= card.description %></p>
+              <% } %>
+
+              <% if (card.dueDate) { %>
+                <p class="meta-text">Due: <%= new Date(card.dueDate).toLocaleDateString() %></p>
+              <% } %>
+
+              <% if (card.type === 'group') { %>
+                <div class="group-details">
+                  <p><strong>Group:</strong> <%= card.groupName %></p>
+                  <p><strong>Members:</strong> <%= card.members.length ? card.members.join(', ') : 'No names added' %></p>
+                </div>
+
+                <section class="subtask-block">
+                  <h4>Subtasks</h4>
+                  <div class="subtask-list">
+                    <% card.subtasks.forEach((subtask) => { %>
+                      <div class="subtask-item">
+                        <form action="/cards/subtasks/<%= card._id %>/<%= subtask._id %>/toggle" method="POST">
+                          <button type="submit" class="ghost-button">
+                            <%= subtask.isDone ? 'Undo' : 'Done' %>
+                          </button>
+                        </form>
+                        <span class="<%= subtask.isDone ? 'subtask-done' : '' %>"><%= subtask.title %></span>
+                        <form action="/cards/subtasks/<%= card._id %>/<%= subtask._id %>/delete" method="POST">
+                          <button type="submit" class="ghost-button danger-button">Remove</button>
+                        </form>
+                      </div>
+                    <% }) %>
+                  </div>
+
+                  <form action="/cards/subtasks/<%= card._id %>" method="POST" class="inline-form compact-form">
+                    <input type="text" name="title" placeholder="New subtask" required />
+                    <button type="submit">Add</button>
+                  </form>
+                </section>
+              <% } %>
+
+              <form action="/cards/move/<%= card._id %>" method="POST" class="stack-form compact-form">
+                <label>
+                  Move To
+                  <select name="listId">
+                    <% lists.forEach((targetList) => { %>
+                      <option value="<%= targetList._id %>" <%= String(targetList._id) === String(list._id) ? 'selected' : '' %>>
+                        <%= targetList.title %>
+                      </option>
+                    <% }) %>
+                  </select>
+                </label>
+                <button type="submit">Move</button>
+              </form>
+
+              <details class="card-editor">
+                <summary>Edit Item</summary>
+                <form action="/cards/edit/<%= card._id %>" method="POST" class="stack-form compact-form">
+                  <input type="hidden" name="type" value="<%= card.type %>" />
+
+                  <label>
+                    Title
+                    <input type="text" name="title" value="<%= card.title %>" required />
+                  </label>
+
+                  <label>
+                    Description
+                    <textarea name="description" rows="2"><%= card.description || '' %></textarea>
+                  </label>
+
+                  <label>
+                    Due Date
+                    <input
+                      type="date"
+                      name="dueDate"
+                      value="<%= card.dueDate ? new Date(card.dueDate).toISOString().split('T')[0] : '' %>"
+                    />
+                  </label>
+
+                  <% if (card.type === 'group') { %>
+                    <label>
+                      Group Name
+                      <input type="text" name="groupName" value="<%= card.groupName || '' %>" required />
+                    </label>
+
+                    <label>
+                      Members
+                      <input type="text" name="members" value="<%= card.members.join(', ') %>" />
+                    </label>
+                  <% } %>
+
+                  <button type="submit">Save Changes</button>
+                </form>
+              </details>
+
+              <form action="/cards/delete/<%= card._id %>" method="POST">
+                <button type="submit" class="ghost-button danger-button">Delete Item</button>
+              </form>
+            </article>
+          <% }) %>
+        </div>
+      </article>
+    <% }) %>
+  </section>
+
+  <script>
+    const typeSelectors = document.querySelectorAll('.task-type-select');
+
+    typeSelectors.forEach((selector) => {
+      const target = document.getElementById(selector.dataset.target);
+
+      const toggleFields = () => {
+        if (!target) {
+          return;
+        }
+
+        target.classList.toggle('hidden', selector.value !== 'group');
+      };
+
+      selector.addEventListener('change', toggleFields);
+      toggleFields();
+    });
+  </script>
+<% } %>
+
+<%- include('partials/footer') %>
